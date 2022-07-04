@@ -1,20 +1,31 @@
-function Drawer(props) {
+function Drawer({onClose, items = [], deleteItem,}) {
+    console.log(items)
     return (
         <div className="overlay ">
             <div className="drawer">
-                <h2 className="mb-30 d-flex justify-between">Корзина <img className="removeBtn cu-p"
+                <h2 className="mb-30 d-flex justify-between">Корзина <img onClick={onClose}
+                                                                          className="removeBtn cu-p"
                                                                           src="/img/krest.svg"
-                                                                          alt="Remove"/></h2>
+                                                                          alt="Close"/></h2>
                 <div className="items">
-                    <div className="cartItem d-flex align-center mb-20">
-                        <div style={props.imageUrl} className="cartItemImg"></div>
+                    {
+                        items.map((obj) => (
+                            <div key={obj.id} className="cartItem d-flex align-center mb-20">
+                                <div style={{backgroundImage: `url(${obj.imageUrl})`}} className="cartItemImg">
 
-                        <div className="mr-20 flex">
-                            <p className="mb-5">{props.title}</p>
-                            <b>{props.price} руб.</b>
-                        </div>
-                        <img className="removeBtn" src="/img/krest.svg" alt="Remove"/>
-                    </div>
+                                </div>
+
+                                <div className="mr-20 flex">
+                                    <p className="mb-5">{obj.title}</p>
+                                    <b>{obj.price} руб.</b>
+                                </div>
+                                <img onClick={() => {
+                                    deleteItem(obj.id)
+                                }} className="removeBtn" src="/img/krest.svg"
+                                     alt="Remove"/>
+                            </div>
+                        ))
+                    }
                 </div>
                 <div className="cartTotalBlock">
                     <ul>
