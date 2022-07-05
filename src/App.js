@@ -1,13 +1,17 @@
 import React from 'react';
 import axios from 'axios';
-import Card from "./components/Card";
+import {Route, Routes} from 'react-router-dom';
 import Header from "./components/Header";
 import Drawer from "./components/Drawer";
+import Home from "./pages/Home"
+import Favorites from "./pages/Favorites"
+import favorites from "./pages/Favorites";
 
 
 function App() {
     const [items, setItems] = React.useState([]);
     const [cartItems, setCartItems] = React.useState([]);
+    const [basket, setBasket] = React.useState([]);
     const [cartOpened, setCartOpened] = React.useState(false);
     const [searchValue, setSearchValue] = React.useState('');
 
@@ -19,6 +23,9 @@ function App() {
         axios.get('https://62bf18910bc9b12561676cdd.mockapi.io/cart').then(res => {
             setCartItems(res.data);
         })
+        axios.get('https://62bf18910bc9b12561676cdd.mockapi.io/basket').then(res => {
+            setBasket(res.data);
+        })
     }, []);
 
     const onAddToCart = (obj) => {
@@ -26,49 +33,45 @@ function App() {
         setCartItems(prev => [...prev, obj]);
     }
 
+
     const onDeleteItem = (id) => {
-        setCartItems(cartItems.filter(obj => obj.id != id));
+        axios.delete(`https://62bf18910bc9b12561676cdd.mockapi.io/cart/${id}`);
+        setCartItems((prev) => prev.filter(item => item.id !== id))
+
+        // setCartItems(cartItems.filter(obj => obj.id != id));
+    }
+
+    const onAddToBasket = (obj) => {
+        console.log(obj)
     }
 
     const onChangeSearchInput = (event) => {
         setSearchValue(event.target.value);
     }
 
+
     return (
         <div className="wrapper clear">
             {cartOpened &&
                 <Drawer items={cartItems} deleteItem={onDeleteItem} onClose={() => setCartOpened(false)}/>}
             <Header onClickCart={() => setCartOpened(true)}/>
-            <div className="content p-40">
-                <div className="d-flex align-center justify-between mb-40">
-                    <h1 className="">{searchValue ? `Поиск по запросу: "${searchValue}"` : "Все кроссовки"}</h1>
-                    <div className="search-block d-flex">
-                        <img src="/img/search.svg" alt="search"/>
-                        {searchValue ?
-                            <img onClick={() => setSearchValue("")}
-                                 className="removeBtn clear cu-p"
-                                 src="/img/krest.svg"
-                                 alt="Close"/> : null}
-                        <input onChange={onChangeSearchInput} value={searchValue} type="text" placeholder="Поиск..."/>
-                    </div>
-                </div>
 
+            <Routes>
+                <Route path="/" element={
+                    <Home
+                        searchValue={searchValue}
+                        setSearchValue={setSearchValue}
+                        onChangeSearchInput={onChangeSearchInput}
+                        items={items}
+                        onAddToBasket={onAddToBasket}
+                        onAddToCart={onAddToCart}
+                    />} exact/>
+                <Route path="/favorites" element={
+                    <Favorites
+                        items={basket}
+                    />} exact/>
+            </Routes>
 
-                <div className="d-flex flex-wrap">
-                    {
-                        items.filter(item => item.title.toLowerCase().includes(searchValue.toLowerCase())).map((item, id) => (
-                            <Card
-                                key={id}
-                                title={item.title}
-                                price={item.price}
-                                id={item.id}
-                                imageUrl={item.imageUrl}
-                                addBasket={() => console.log("Добавлено в корзину!")}
-                                addLike={(obj) => onAddToCart(obj)}
-                            />
-                        ))}
-                </div>
-            </div>
         </div>
     );
 }
